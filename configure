@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+echo ""
+echo "Checking for HashiCorp Packer (tested with 1.2.1)"
+packer --version
+
+echo ""
+echo "Checking for Oracle VM VirtualBox (tested with 5.2.8)"
+VBoxManage --version
+
+echo ""
+echo "Checking for Perl shasum (tested with 5.84)"
+shasum --version

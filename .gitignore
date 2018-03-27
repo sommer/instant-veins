@@ -1,0 +1,8 @@
+.DS_Store
+files/*.iso
+files/*.tar.bz2
+files/*.tar.gz
+files/*.tgz
+files/*.zip
+output/*
+packer_cache/*

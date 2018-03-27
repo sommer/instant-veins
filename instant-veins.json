@@ -1,0 +1,113 @@
+{
+  "_comment": [
+    "Packer Template for building Instant Veins",
+    "Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>",
+    "",
+    "Documentation for this template is at http://veins.car2x.org/",
+    "",
+    "This program is free software; you can redistribute it and/or modify",
+    "it under the terms of the GNU General Public License as published by",
+    "the Free Software Foundation; either version 2 of the License, or",
+    "(at your option) any later version.",
+    "",
+    "This program is distributed in the hope that it will be useful,",
+    "but WITHOUT ANY WARRANTY; without even the implied warranty of",
+    "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+    "GNU General Public License for more details.",
+    "",
+    "You should have received a copy of the GNU General Public License",
+    "along with this program; if not, write to the Free Software",
+    "Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA",
+    ""
+  ],
+
+  "variables": {
+    "version": "4.6-i2"
+  },
+
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "iso_urls": [
+        "files/debian-9.4.0-amd64-netinst.iso",
+        "https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/debian-9.4.0-amd64-netinst.iso"
+      ],
+      "iso_checksum": "124d270006703f2111224dec3bf7a9d01450168be41d4834f88fdd035552b044",
+      "iso_checksum_type": "sha256",
+      "headless": true,
+      "disk_size": "20480",
+      "guest_additions_mode": "disable",
+      "guest_os_type": "Debian_64",
+      "post_shutdown_delay": "1m",
+      "shutdown_command": "echo 'veins' | sudo -S shutdown -P now",
+      "boot_wait": "5s",
+      "http_directory": "scripts",
+      "ssh_username": "veins",
+      "ssh_password": "veins",
+      "ssh_wait_timeout": "10000s",
+      "vboxmanage": [
+        [ "modifyvm", "{{.Name}}", "--memory", "4096" ],
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+      ],
+      "boot_command": [
+        "<esc><wait>",
+        "install ",
+        "auto ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        "locale=en_US.UTF-8 ",
+        "kbd-chooser/method=us ",
+        "keyboard-configuration/xkb-keymap=us ",
+        "netcfg/get_hostname=instant-veins ",
+        "netcfg/get_domain=car2x.org ",
+        "<enter>"
+      ],
+      "format": "ova",
+      "output_directory": "output",
+      "vm_name": "instant-veins-{{user `version`}}",
+      "export_opts": [
+        "--manifest",
+        "--vsys", "0",
+        "--description", "Instant Veins {{user `version`}}",
+        "--version", "{{user `version`}}"
+      ]
+    }
+  ],
+
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'veins' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "script": "scripts/pre.sh"
+    },
+    {
+      "type": "file",
+      "source": "files/.zshrc",
+      "destination": "/home/veins/.zshrc"
+    },
+    {
+      "type": "file",
+      "source": "files/veins-background.jpg",
+      "destination": "/home/veins/Documents/veins-background.jpg"
+    },
+    {
+      "type": "file",
+      "source": "files/omnetpp-5.2.1-src-linux.tgz",
+      "destination": "/home/veins/src/omnetpp-5.2.1-src-linux.tgz"
+    },
+    {
+      "type": "file",
+      "source": "files/sumo-src-0.30.0.zip",
+      "destination": "/home/veins/src/sumo-src-0.30.0.zip"
+    },
+    {
+      "type": "ansible-local",
+      "playbook_file": "scripts/ansible.yml"
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'veins' | {{.Vars}} sudo -E -S bash '{{.Path}}'",
+      "script": "scripts/post.sh"
+    }
+  ]
+}
+

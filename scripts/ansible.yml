@@ -1,0 +1,487 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+- hosts: all
+  become: true
+  tasks:
+
+    #  _ __  _ __ ___
+    # | '_ \| '__/ _ \
+    # | |_) | | |  __/
+    # | .__/|_|  \___|
+    # |_|
+    #
+    - name: Update apt
+      apt: update_cache=yes
+
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - vim-gnome
+        - task-gnome-desktop
+        - zsh
+        - terminator
+        - git-core
+        - gitk
+        - git-gui
+        - tig
+        - clang
+        - ccache
+        - valgrind
+
+    - name: Configure user
+      user:
+        name: veins
+        comment: "Veins (password is veins),,,"
+        shell: /bin/zsh
+        password: "$6$nkDuo0SdUXR8Im$4g8tXbIruu1YLimqImncK0pQ2EDzMuQjBwt8QRxS9L11NxvYCZarFdLvCwK28S.pF7aG2QpwUlG9J5i9GkYZB0"
+        groups: sudo,cdrom,floppy,dip,video,audio,plugdev,netdev,bluetooth
+        append: yes
+
+    - name: Configure MOTD
+      copy:
+        content: |
+
+          Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+          permitted by applicable law.
+
+          Welcome to Instant Veins!
+        dest: /etc/motd
+
+    - name: Make sure scripts can be executed from CDROM (VirtualBox guest additions need this)
+      replace:
+        dest: /etc/fstab
+        regexp: '(/media/cdrom0\s+udf,iso9660\s+)user,noauto(\s+)'
+        replace: '\1user,noauto,exec\2'
+
+    - name: Disable (slow) DNS lookups for sshd
+      replace:
+        dest: /etc/ssh/sshd_config
+        regexp: '#(UseDNS no)'
+        replace: '\1'
+      notify:
+        - restart sshd
+
+    - name: Install VMware guest tools
+      apt: name={{item}} state=installed
+      with_items:
+        - open-vm-tools-desktop
+
+    - name: Create default directories for user
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+        - Documents
+
+    - name: Update .profile for ccache
+      lineinfile:
+        dest: /home/veins/.profile
+        line: 'PATH="/usr/lib/ccache:$PATH"'
+
+
+    #                             _
+    #   ___  _ __ ___  _ __   ___| |_
+    #  / _ \| '_ ` _ \| '_ \ / _ \ __|
+    # | (_) | | | | | | | | |  __/ |_
+    #  \___/|_| |_| |_|_| |_|\___|\__|
+    #
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - bison
+        - flex
+        - tcl-dev
+        - tk-dev
+        - openjdk-8-jre
+        - qt5-default
+        - libopenscenegraph-dev
+        - libosgearth-dev
+        - xvfb
+        - libwebkitgtk-1.0-0
+      become_user: root
+
+    - name: Create default directories
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+
+    - name: Unpack source
+      become_user: veins
+      shell: |
+        set -exu
+        tar -xf omnetpp-5.2.1-src-linux.tgz
+      args:
+        executable: /bin/sh
+        chdir: /home/veins/src
+        creates: /home/veins/src/omnetpp-5.2.1
+
+    - name: Create symlink
+      become_user: veins
+      file:
+        src: /home/veins/src/omnetpp-5.2.1
+        dest: /home/veins/src/omnetpp
+        state: link
+
+    - name: Add to path
+      become_user: veins
+      lineinfile:
+        dest: /home/veins/.profile
+        line: 'PATH="$PATH:$HOME/src/omnetpp/bin"'
+
+    - name: Build OMNeT++
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        xvfb-run ./configure
+        make -j2
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/omnetpp
+        creates: /home/veins/src/omnetpp/bin/opp_run
+
+
+    #  ___ _   _ _ __ ___   ___
+    # / __| | | | '_ ` _ \ / _ \
+    # \__ \ |_| | | | | | | (_) |
+    # |___/\__,_|_| |_| |_|\___/
+    #
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - libxerces-c-dev
+        - libproj-dev
+        - libgdal-dev
+        - libfox-1.6-dev
+        - libopenscenegraph-dev
+        - libavformat-dev
+        - libavcodec-dev
+        - libswscale-dev
+        - python-dev
+      become_user: root
+
+    - name: Create default directories
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+
+    - name: Unpack source
+      become_user: veins
+      shell: |
+        set -exu
+        unzip sumo-src-0.30.0.zip
+      args:
+        executable: /bin/sh
+        chdir: /home/veins/src
+        creates: /home/veins/src/sumo-0.30.0
+
+    - name: Create symlink
+      become_user: veins
+      file:
+        src: /home/veins/src/sumo-0.30.0
+        dest: /home/veins/src/sumo
+        state: link
+
+    - name: Add to path
+      become_user: veins
+      lineinfile:
+        dest: /home/veins/.profile
+        line: 'PATH="$PATH:$HOME/src/sumo/bin"'
+
+    - name: Build SUMO
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        ./configure --with-python
+        make -j2
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/sumo
+        creates: /home/veins/src/sumo/bin/sumo
+
+    #  _            _
+    # (_)_ __   ___| |_
+    # | | '_ \ / _ \ __|
+    # | | | | |  __/ |_
+    # |_|_| |_|\___|\__|
+    #
+    - name: Create default directories
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+
+    - name: Clone git
+      become_user: veins
+      git:
+        repo: https://github.com/inet-framework/inet
+        dest: /home/veins/src/inet
+        update: no
+
+    - name: Prepare branch
+      become_user: veins
+      shell: |
+        set -exu
+        git checkout -B v3.6.3-work v3.6.3
+        git submodule init
+        git submodule update
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/inet
+
+    - name: Disable INETs use of pre-compiled headers
+      become_user: veins
+      lineinfile:
+        dest: /home/veins/.profile
+        line: 'export USE_PRECOMPILED_HEADER=no'
+
+    - name: Build INET
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        opp_featuretool reset
+        make src/inet/features.h
+        make makefiles
+        make -j2
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/inet
+        creates: /home/veins/src/inet/src/libINET.so
+
+    - name: Import into Workspace
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/inet
+        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/inet
+
+
+    #            _
+    # __   _____(_)_ __  ___
+    # \ \ / / _ \ | '_ \/ __|
+    #  \ V /  __/ | | | \__ \
+    #   \_/ \___|_|_| |_|___/
+    #
+    #
+    - name: Create default directories
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+
+    - name: Clone git
+      become_user: veins
+      git:
+        repo: https://github.com/sommer/veins.git
+        dest: /home/veins/src/veins
+        update: no
+
+    - name: Prepare branch
+      become_user: veins
+      shell: |
+        set -exu
+        git checkout -B veins-4.6-work veins-4.6
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins
+
+    - name: Build Veins
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        ./configure
+        make -j2
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins
+        creates: /home/veins/src/veins/src/libveins.so
+
+    - name: Build Veins_INET
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        ./configure
+        make -j2
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins/subprojects/veins_inet
+        creates: /home/veins/src/veins/subprojects/veins_inet/src/libveins_inet.so
+
+    - name: Import Veins into Workspace
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins
+        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins
+
+    - name: Import Veins_INET into Workspace
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins/subprojects/veins_inet
+        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet
+
+
+    #                  _
+    #  _ __   ___  ___| |_
+    # | '_ \ / _ \/ __| __|
+    # | |_) | (_) \__ \ |_
+    # | .__/ \___/|___/\__|
+    # |_|
+    #
+    - name: Create default directories for user
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - .local/share/applications
+
+    - name: Launcher Entry
+      become_user: veins
+      copy:
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=OMNeT++ IDE
+          Exec=omnetpp -data /home/veins/workspace.omnetpp -import /home/veins/src/veins/README.txt
+          Icon=/home/veins/src/omnetpp/ide/icon.xpm
+          Categories=Science;
+          StartupWMClass=OMNeT++ IDE
+        dest: /home/veins/.local/share/applications/omnetpp.desktop
+        mode: 0755
+
+    - name: Launcher Entry
+      become_user: veins
+      copy:
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=sumo-launchd
+          Exec=terminator --title 'sumo-launchd' --classname 'sumo-launchd' --command '/home/veins/src/veins/sumo-launchd.py -vv'
+          Icon=network-transmit-receive-symbolic
+          Categories=Science;
+          StartupWMClass=sumo-launchd
+        dest: /home/veins/.local/share/applications/sumo-launchd.desktop
+        mode: 0755
+
+    - name: Launcher Entry
+      become_user: veins
+      copy:
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=Veins documentation online
+          Exec=firefox --class veins-web -- 'http://veins.car2x.org/documentation/'
+          Icon=help-faq
+          Categories=Science;
+          StartupWMClass=veins-web
+        dest: /home/veins/.local/share/applications/veins-web.desktop
+        mode: 0755
+
+    - name: Favourites
+      become_user: veins
+      shell: |
+        set -exu
+        xvfb-run dconf write "/org/gnome/shell/favorite-apps" "['omnetpp.desktop', 'sumo-launchd.desktop', 'veins-web.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+
+    - name: Background
+      become_user: veins
+      shell: |
+        set -exu
+        xvfb-run dconf write "/org/gnome/desktop/background/picture-uri" "'file:///home/veins/Documents/veins-background.jpg'"
+
+    - name: Disable Screensaver
+      become_user: veins
+      shell: |
+        set -exu
+        xvfb-run dconf write "/org/gnome/desktop/session/idle-delay" "0"
+
+    - name: Build Workspace
+      become_user: veins
+      shell: |
+        set -exu
+        source /home/veins/.profile
+        xvfb-run /home/veins/src/omnetpp/ide/omnetpp --launcher.suppressErrors -data /home/veins/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -build all || echo "build all: exit code $? is suppressed"
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src
+
+
+    #                 _
+    #   ___ _ __   __| |
+    #  / _ \ '_ \ / _` |
+    # |  __/ | | | (_| |
+    #  \___|_| |_|\__,_|
+    #
+
+
+  handlers:
+    - name: restart sshd
+      service: name=ssh state=restarted
+
+
