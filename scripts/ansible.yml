@@ -144,16 +144,16 @@
       become_user: veins
       shell: |
         set -exu
-        tar -xf omnetpp-5.2.1-src-linux.tgz
+        tar -xf omnetpp-5.3-src-linux.tgz
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/omnetpp-5.2.1
+        creates: /home/veins/src/omnetpp-5.3
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/omnetpp-5.2.1
+        src: /home/veins/src/omnetpp-5.3
         dest: /home/veins/src/omnetpp
         state: link
 
@@ -269,7 +269,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B v3.6.3-work v3.6.3
+        git checkout -B v3.6.4-work v3.6.4
         git submodule init
         git submodule update
       args:
