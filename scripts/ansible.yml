@@ -459,7 +459,7 @@
       become_user: veins
       shell: |
         set -exu
-        xvfb-run dconf write "/org/gnome/desktop/session/idle-delay" "0"
+        xvfb-run dconf write "/org/gnome/desktop/session/idle-delay" "uint32 0"
 
     - name: Build Workspace
       become_user: veins
