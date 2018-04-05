@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "4.6-i3"
+    "version": "4.6-i3-simulte"
   },
 
   "builders": [
