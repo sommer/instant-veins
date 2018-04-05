@@ -144,16 +144,16 @@
       become_user: veins
       shell: |
         set -exu
-        tar -xf omnetpp-5.3-src-linux.tgz
+        tar -xf omnetpp-5.4.1-src-linux.tgz
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/omnetpp-5.3
+        creates: /home/veins/src/omnetpp-5.4.1
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/omnetpp-5.3
+        src: /home/veins/src/omnetpp-5.4.1
         dest: /home/veins/src/omnetpp
         state: link
 

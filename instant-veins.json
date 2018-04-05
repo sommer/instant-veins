@@ -91,8 +91,8 @@
     },
     {
       "type": "file",
-      "source": "files/omnetpp-5.3-src-linux.tgz",
-      "destination": "/home/veins/src/omnetpp-5.3-src-linux.tgz"
+      "source": "files/omnetpp-5.4.1-src-linux.tgz",
+      "destination": "/home/veins/src/omnetpp-5.4.1-src-linux.tgz"
     },
     {
       "type": "file",
