@@ -461,6 +461,19 @@
         set -exu
         xvfb-run dconf write "/org/gnome/desktop/session/idle-delay" "uint32 0"
 
+    - name: Script for first login
+      become_user: veins
+      copy:
+        content: |
+          if [ -f ".veins-first-login" ]; then
+            echo "not the first login"
+          else
+            gnome-help &
+            touch .veins-first-login
+          fi
+        dest: /home/veins/.gnomerc
+        mode: 0755
+
     - name: Build Workspace
       become_user: veins
       shell: |
