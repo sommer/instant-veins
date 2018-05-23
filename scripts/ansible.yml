@@ -309,6 +309,11 @@
     #   \_/ \___|_|_| |_|___/
     #
     #
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - xterm
+
     - name: Create default directories
       become_user: veins
       file:
@@ -422,7 +427,7 @@
           [Desktop Entry]
           Type=Application
           Name=sumo-launchd
-          Exec=terminator --title 'sumo-launchd' --classname 'sumo-launchd' --command '/home/veins/src/veins/sumo-launchd.py -vv'
+          Exec=xterm -class sumo-launchd -e /home/veins/src/veins/sumo-launchd.py -vv
           Icon=network-transmit-receive-symbolic
           Categories=Science;
           StartupWMClass=sumo-launchd
