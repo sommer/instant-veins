@@ -2,6 +2,9 @@
 
 set -exu
 
+echo "==> Remove user veins from password-less sudoers"
+rm /etc/sudoers.d/veins
+
 echo "==> Clean apt"
 apt-get -y autoremove --purge
 apt-get -y clean
