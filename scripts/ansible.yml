@@ -94,7 +94,13 @@
         mode: 0755
       with_items:
         - src
+        - bin
         - Documents
+
+    - name: Update .profile to include bin/ in PATH
+      lineinfile:
+        dest: /home/veins/.profile
+        line: 'PATH="$PATH:$HOME/bin"'
 
     - name: Update .profile for ccache
       lineinfile:
@@ -477,6 +483,20 @@
             touch .veins-first-login
           fi
         dest: /home/veins/.gnomerc
+        mode: 0755
+
+    - name: Script for installing virtualbox-guest-tools
+      become_user: veins
+      copy:
+        content: |
+          #!/bin/bash
+          set -e
+          sudo sh -c "echo 'deb http://deb.debian.org/debian/ stretch-backports contrib' > /etc/apt/sources.list.d/debian-strech-backports-contrib.list"
+          sudo apt update
+          sudo apt install virtualbox-guest-x11
+          sudo usermod -a -G vboxsf veins
+          echo Please reboot machine to make sure changes are applied...
+        dest: /home/veins/bin/virtualbox-guest-install.sh
         mode: 0755
 
     - name: Build Workspace
