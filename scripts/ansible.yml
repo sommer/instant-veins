@@ -412,6 +412,11 @@
       with_items:
         - .local/share/applications
 
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - midori
+
     - name: Launcher Entry
       become_user: veins
       copy:
@@ -447,10 +452,10 @@
           [Desktop Entry]
           Type=Application
           Name=Veins documentation online
-          Exec=firefox --class veins-web -- 'http://veins.car2x.org/documentation/'
+          Exec=midori --app='http://veins.car2x.org/documentation/'
           Icon=help-faq
           Categories=Science;
-          StartupWMClass=veins-web
+          StartupWMClass=http___veins_car2x_org_documentation_
         dest: /home/veins/.local/share/applications/veins-web.desktop
         mode: 0755
 
