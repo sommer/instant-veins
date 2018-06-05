@@ -342,7 +342,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B veins-4.7-work veins-4.7
+        git checkout -B veins-4.7.1-work veins-4.7.1
       args:
         executable: /bin/bash
         chdir: /home/veins/src/veins

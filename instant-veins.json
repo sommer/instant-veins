@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "4.7-i1"
+    "version": "4.7.1-i1"
   },
 
   "builders": [
