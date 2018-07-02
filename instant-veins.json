@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "5a1-i1"
+    "version": "5a1-i1-simulte"
   },
 
   "builders": [

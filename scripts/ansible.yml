@@ -270,7 +270,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B v4.0.0-work v4.0.0
+        git checkout -B v3.6.4-work v3.6.4
         git submodule init
         git submodule update
       args:
@@ -392,7 +392,7 @@
         chdir: /home/veins/src/veins
         creates: /home/veins/src/veins/doc/doxy/index.html
 
-    - name: Build Veins_INET
+    - name: Build Veins_INET3
       become_user: veins
       shell: |
         set -exu
@@ -401,8 +401,8 @@
         make -j2
       args:
         executable: /bin/bash
-        chdir: /home/veins/src/veins/subprojects/veins_inet
-        creates: /home/veins/src/veins/subprojects/veins_inet/src/libveins_inet.so
+        chdir: /home/veins/src/veins/subprojects/veins_inet3
+        creates: /home/veins/src/veins/subprojects/veins_inet3/src/libveins_inet.so
 
     - name: Import Veins into Workspace
       become_user: veins
@@ -415,7 +415,7 @@
         chdir: /home/veins/src/veins
         creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins
 
-    - name: Import Veins_INET into Workspace
+    - name: Import Veins_INET3 into Workspace
       become_user: veins
       shell: |
         set -exu
@@ -423,8 +423,79 @@
         xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
       args:
         executable: /bin/bash
-        chdir: /home/veins/src/veins/subprojects/veins_inet
-        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet
+        chdir: /home/veins/src/veins/subprojects/veins_inet3
+        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet3
+
+    #      _                 _ _
+    #  ___(_)_ __ ___  _   _| | |_ ___
+    # / __| | '_ ` _ \| | | | | __/ _ \
+    # \__ \ | | | | | | |_| | | ||  __/
+    # |___/_|_| |_| |_|\__,_|_|\__\___|
+    #
+    #
+    - name: Create default directories
+      become_user: veins
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - src
+
+    - name: Clone git
+      become_user: veins
+      git:
+        repo: https://github.com/inet-framework/simulte.git
+        dest: /home/veins/src/simulte
+        update: no
+
+    - name: Prepare branch
+      become_user: veins
+      shell: |
+        set -exu
+        git checkout -B veins-integration-work origin/veins-integration
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/simulte
+
+    - name: Enable project features
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        opp_featuretool reset
+        opp_featuretool enable SimuLTE_Cars
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/simulte
+
+    - name: Install base packages
+      apt: name={{item}} state=installed
+      with_items:
+        - xmlstarlet
+
+    - name: Update project references
+      become_user: veins
+      shell: |
+        set -exu
+        xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="veins_inet3"]' .project
+        xmlstarlet ed --pf --inplace --subnode /projectDescription/projects --type elem -n project -v veins_inet3 .project
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/simulte
+
+    - name: Import into Workspace
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/simulte
+        creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/simulte
 
 
     #                  _
