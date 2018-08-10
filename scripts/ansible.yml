@@ -45,7 +45,6 @@
         - tig
         - clang
         - ccache
-        - valgrind
 
     - name: Configure user
       user:
@@ -127,6 +126,8 @@
         - libosgearth-dev
         - xvfb
         - libwebkitgtk-1.0-0
+        - doxygen
+        - graphviz
       become_user: root
 
     - name: Create default directories
@@ -319,6 +320,11 @@
       apt: name={{item}} state=installed
       with_items:
         - xterm
+        - clang-format
+        - uncrustify
+        - valgrind
+        - gdb
+        - lldb
 
     - name: Create default directories
       become_user: veins
