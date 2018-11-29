@@ -325,6 +325,8 @@
         - valgrind
         - gdb
         - lldb
+        - doxygen
+        - graphviz
 
     - name: Create default directories
       become_user: veins
@@ -364,6 +366,17 @@
         executable: /bin/bash
         chdir: /home/veins/src/veins
         creates: /home/veins/src/veins/src/libveins.so
+
+    - name: Build Veins Doxygen
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        make doxy
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/veins
+        creates: /home/veins/src/veins/doc/doxy/index.html
 
     - name: Build Veins_INET
       become_user: veins
@@ -465,11 +478,25 @@
         dest: /home/veins/.local/share/applications/veins-web.desktop
         mode: 0755
 
+    - name: Launcher Entry
+      become_user: veins
+      copy:
+        content: |
+          [Desktop Entry]
+          Type=Application
+          Name=Veins source code documentation (offline)
+          Exec=midori --app='file:///home/veins/src/veins/doc/doxy/index.html'
+          Icon=help-contents
+          Categories=Science;
+          StartupWMClass=file____home_veins_src_veins_doc_doxy_index_html
+        dest: /home/veins/.local/share/applications/veins-doxy.desktop
+        mode: 0755
+
     - name: Favourites
       become_user: veins
       shell: |
         set -exu
-        xvfb-run dconf write "/org/gnome/shell/favorite-apps" "['omnetpp.desktop', 'sumo-launchd.desktop', 'veins-web.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+        xvfb-run dconf write "/org/gnome/shell/favorite-apps" "['omnetpp.desktop', 'sumo-launchd.desktop', 'veins-web.desktop', 'veins-doxy.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
 
     - name: Background
       become_user: veins
