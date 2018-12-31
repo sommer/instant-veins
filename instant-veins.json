@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "4.7.1-i1"
+    "version": "5a1-i1"
   },
 
   "builders": [
@@ -96,8 +96,8 @@
     },
     {
       "type": "file",
-      "source": "files/sumo-src-0.32.0.zip",
-      "destination": "/home/veins/src/sumo-src-0.32.0.zip"
+      "source": "files/sumo-src-1.0.1.zip",
+      "destination": "/home/veins/src/sumo-src-1.0.1.zip"
     },
     {
       "type": "ansible-local",

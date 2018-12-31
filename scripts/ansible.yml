@@ -211,16 +211,16 @@
       become_user: veins
       shell: |
         set -exu
-        unzip sumo-src-0.32.0.zip
+        unzip sumo-src-1.0.1.zip
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/sumo-0.32.0
+        creates: /home/veins/src/sumo-1.0.1
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/sumo-0.32.0
+        src: /home/veins/src/sumo-1.0.1
         dest: /home/veins/src/sumo
         state: link
 
@@ -270,7 +270,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B v3.6.4-work v3.6.4
+        git checkout -B v4.0.0-work v4.0.0
         git submodule init
         git submodule update
       args:
@@ -283,7 +283,7 @@
         dest: /home/veins/.profile
         line: 'export USE_PRECOMPILED_HEADER=no'
 
-    - name: Build INET
+    - name: Build INET in release mode
       become_user: veins
       shell: |
         set -exu
@@ -291,11 +291,25 @@
         opp_featuretool reset
         make src/inet/features.h
         make makefiles
-        make -j2
+        make -j2 MODE=release
       args:
         executable: /bin/bash
         chdir: /home/veins/src/inet
         creates: /home/veins/src/inet/src/libINET.so
+
+    - name: Build INET in debug mode
+      become_user: veins
+      shell: |
+        set -exu
+        source ~/.profile
+        opp_featuretool reset
+        make src/inet/features.h
+        make makefiles
+        make -j2 MODE=debug
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/src/inet
+        creates: /home/veins/src/inet/src/libINET_dbg.so
 
     - name: Import into Workspace
       become_user: veins
@@ -350,7 +364,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B veins-4.7.1-work veins-4.7.1
+        git checkout -B veins-5a1-work veins-5a1
       args:
         executable: /bin/bash
         chdir: /home/veins/src/veins
