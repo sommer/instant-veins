@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "5a1-i1"
+    "version": "5a2-i1"
   },
 
   "builders": [
@@ -91,13 +91,13 @@
     },
     {
       "type": "file",
-      "source": "files/omnetpp-5.4.1-src-linux.tgz",
-      "destination": "/home/veins/src/omnetpp-5.4.1-src-linux.tgz"
+      "source": "files/omnetpp-5.5.1-src-linux.tgz",
+      "destination": "/home/veins/src/omnetpp-5.5.1-src-linux.tgz"
     },
     {
       "type": "file",
-      "source": "files/sumo-src-1.0.1.zip",
-      "destination": "/home/veins/src/sumo-src-1.0.1.zip"
+      "source": "files/sumo-src-1.2.0.zip",
+      "destination": "/home/veins/src/sumo-src-1.2.0.zip"
     },
     {
       "type": "ansible-local",

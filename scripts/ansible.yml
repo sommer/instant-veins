@@ -145,16 +145,16 @@
       become_user: veins
       shell: |
         set -exu
-        tar -xf omnetpp-5.4.1-src-linux.tgz
+        tar -xf omnetpp-5.5.1-src-linux.tgz
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/omnetpp-5.4.1
+        creates: /home/veins/src/omnetpp-5.5.1
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/omnetpp-5.4.1
+        src: /home/veins/src/omnetpp-5.5.1
         dest: /home/veins/src/omnetpp
         state: link
 
@@ -194,6 +194,7 @@
         - libavcodec-dev
         - libswscale-dev
         - python-dev
+        - cmake
       become_user: root
 
     - name: Create default directories
@@ -211,16 +212,16 @@
       become_user: veins
       shell: |
         set -exu
-        unzip sumo-src-1.0.1.zip
+        unzip sumo-src-1.2.0.zip
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/sumo-1.0.1
+        creates: /home/veins/src/sumo-1.2.0
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/sumo-1.0.1
+        src: /home/veins/src/sumo-1.2.0
         dest: /home/veins/src/sumo
         state: link
 
@@ -235,11 +236,11 @@
       shell: |
         set -exu
         source ~/.profile
-        ./configure --with-python
+        cmake ..
         make -j2
       args:
         executable: /bin/bash
-        chdir: /home/veins/src/sumo
+        chdir: /home/veins/src/sumo/build
         creates: /home/veins/src/sumo/bin/sumo
 
     #  _            _
@@ -270,7 +271,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B v4.0.0-work v4.0.0
+        git checkout -B v4.1.1-work v4.1.1
         git submodule init
         git submodule update
       args:
@@ -364,7 +365,7 @@
       become_user: veins
       shell: |
         set -exu
-        git checkout -B veins-5a1-work veins-5a1
+        git checkout -B veins-5a2-work veins-5a2
       args:
         executable: /bin/bash
         chdir: /home/veins/src/veins
