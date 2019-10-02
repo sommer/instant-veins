@@ -33,18 +33,19 @@
       apt: update_cache=yes
 
     - name: Install base packages
-      apt: name={{item}} state=installed
-      with_items:
-        - vim-gnome
-        - task-gnome-desktop
-        - zsh
-        - terminator
-        - git-core
-        - gitk
-        - git-gui
-        - tig
-        - clang
-        - ccache
+      apt:
+        state: present
+        name:
+          - vim-gtk3
+          - task-gnome-desktop
+          - zsh
+          - terminator
+          - git-core
+          - gitk
+          - git-gui
+          - tig
+          - clang
+          - ccache
 
     - name: Configure user
       user:
@@ -53,6 +54,24 @@
         shell: /bin/zsh
         password: "$6$nkDuo0SdUXR8Im$4g8tXbIruu1YLimqImncK0pQ2EDzMuQjBwt8QRxS9L11NxvYCZarFdLvCwK28S.pF7aG2QpwUlG9J5i9GkYZB0"
         groups: sudo,cdrom,floppy,dip,video,audio,plugdev,netdev,bluetooth
+        append: yes
+
+    - name: Prepare for Virtualbox guest tools installation (packages)
+      apt:
+        state: present
+        name:
+          - linux-headers-amd64
+
+    - name: Prepare for Virtualbox guest tools installation (group 1)
+      group:
+        state: present
+        name: vboxsf
+        system: yes
+
+    - name: Prepare for Virtualbox guest tools installation (group 2)
+      user:
+        name: veins
+        groups: vboxsf
         append: yes
 
     - name: Configure MOTD
@@ -80,9 +99,10 @@
         - restart sshd
 
     - name: Install VMware guest tools
-      apt: name={{item}} state=installed
-      with_items:
-        - open-vm-tools-desktop
+      apt:
+        state: present
+        name:
+          - open-vm-tools-desktop
 
     - name: Create default directories for user
       file:
@@ -96,15 +116,28 @@
         - bin
         - Documents
 
-    - name: Update .profile to include bin/ in PATH
+    - name: Create .shrc
+      become_user: veins
       lineinfile:
-        dest: /home/veins/.profile
+        dest: /home/veins/.shrc
+        create: yes
+        line: '# Common environment variables and shell config'
+
+    - name: Update .shrc to include bin/ in PATH
+      lineinfile:
+        dest: /home/veins/.shrc
         line: 'PATH="$PATH:$HOME/bin"'
 
-    - name: Update .profile for ccache
+    - name: Update .shrc for ccache
       lineinfile:
-        dest: /home/veins/.profile
+        dest: /home/veins/.shrc
         line: 'PATH="/usr/lib/ccache:$PATH"'
+
+    - name: Disable Wayland for GDM3
+      replace:
+        path: /etc/gdm3/daemon.conf
+        regexp: '^#WaylandEnable=false$'
+        replace: 'WaylandEnable=false'
 
 
     #                             _
@@ -114,21 +147,22 @@
     #  \___/|_| |_| |_|_| |_|\___|\__|
     #
     - name: Install base packages
-      apt: name={{item}} state=installed
-      with_items:
-        - bison
-        - flex
-        - tcl-dev
-        - tk-dev
-        - openjdk-8-jre
-        - qt5-default
-        - libopenscenegraph-dev
-        - libosgearth-dev
-        - xvfb
-        - libwebkitgtk-1.0-0
-        - doxygen
-        - graphviz
-      become_user: root
+      apt:
+        state: present
+        name:
+          - bison
+          - flex
+          - tcl-dev
+          - tk-dev
+          - openjdk-11-jre
+          - qt5-default
+          - libopenscenegraph-3.4-dev
+          - libosgearth-dev
+          - openscenegraph-plugin-osgearth
+          - xvfb
+          - libwebkit2gtk-4.0-dev
+          - doxygen
+          - graphviz
 
     - name: Create default directories
       become_user: veins
@@ -145,30 +179,30 @@
       become_user: veins
       shell: |
         set -exu
-        tar -xf omnetpp-5.5.1-src-linux.tgz
+        tar -xf omnetpp-5.6-src-linux.tgz
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/omnetpp-5.5.1
+        creates: /home/veins/src/omnetpp-5.6
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/omnetpp-5.5.1
+        src: /home/veins/src/omnetpp-5.6
         dest: /home/veins/src/omnetpp
         state: link
 
     - name: Add to path
       become_user: veins
       lineinfile:
-        dest: /home/veins/.profile
+        dest: /home/veins/.shrc
         line: 'PATH="$PATH:$HOME/src/omnetpp/bin"'
 
     - name: Build OMNeT++
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         xvfb-run ./configure
         make -j2
       args:
@@ -183,19 +217,19 @@
     # |___/\__,_|_| |_| |_|\___/
     #
     - name: Install base packages
-      apt: name={{item}} state=installed
-      with_items:
-        - libxerces-c-dev
-        - libproj-dev
-        - libgdal-dev
-        - libfox-1.6-dev
-        - libopenscenegraph-dev
-        - libavformat-dev
-        - libavcodec-dev
-        - libswscale-dev
-        - python-dev
-        - cmake
-      become_user: root
+      apt:
+        state: present
+        name:
+          - libxerces-c-dev
+          - libproj-dev
+          - libgdal-dev
+          - libfox-1.6-dev
+          - libopenscenegraph-3.4-dev
+          - libavformat-dev
+          - libavcodec-dev
+          - libswscale-dev
+          - python-dev
+          - cmake
 
     - name: Create default directories
       become_user: veins
@@ -212,30 +246,30 @@
       become_user: veins
       shell: |
         set -exu
-        unzip sumo-src-1.2.0.zip
+        tar -xvf sumo-src-1.4.0.tar.gz
       args:
         executable: /bin/sh
         chdir: /home/veins/src
-        creates: /home/veins/src/sumo-1.2.0
+        creates: /home/veins/src/sumo-1.4.0
 
     - name: Create symlink
       become_user: veins
       file:
-        src: /home/veins/src/sumo-1.2.0
+        src: /home/veins/src/sumo-1.4.0
         dest: /home/veins/src/sumo
         state: link
 
     - name: Add to path
       become_user: veins
       lineinfile:
-        dest: /home/veins/.profile
+        dest: /home/veins/.shrc
         line: 'PATH="$PATH:$HOME/src/sumo/bin"'
 
     - name: Build SUMO
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         cmake ..
         make -j2
       args:
@@ -281,14 +315,14 @@
     - name: Disable INETs use of pre-compiled headers
       become_user: veins
       lineinfile:
-        dest: /home/veins/.profile
+        dest: /home/veins/.shrc
         line: 'export USE_PRECOMPILED_HEADER=no'
 
     - name: Build INET in release mode
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         opp_featuretool reset
         make src/inet/features.h
         make makefiles
@@ -302,7 +336,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         opp_featuretool reset
         make src/inet/features.h
         make makefiles
@@ -316,7 +350,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
       args:
         executable: /bin/bash
@@ -332,16 +366,17 @@
     #
     #
     - name: Install base packages
-      apt: name={{item}} state=installed
-      with_items:
-        - xterm
-        - clang-format
-        - uncrustify
-        - valgrind
-        - gdb
-        - lldb
-        - doxygen
-        - graphviz
+      apt:
+        state: present
+        name:
+          - xterm
+          - clang-format
+          - uncrustify
+          - valgrind
+          - gdb
+          - lldb
+          - doxygen
+          - graphviz
 
     - name: Create default directories
       become_user: veins
@@ -374,7 +409,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         ./configure
         make -j2
       args:
@@ -386,7 +421,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         make doxy
       args:
         executable: /bin/bash
@@ -397,7 +432,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         ./configure
         make -j2
       args:
@@ -409,7 +444,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
       args:
         executable: /bin/bash
@@ -420,7 +455,7 @@
       become_user: veins
       shell: |
         set -exu
-        source ~/.profile
+        source ~/.shrc
         xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
       args:
         executable: /bin/bash
@@ -447,9 +482,10 @@
         - .local/share/applications
 
     - name: Install base packages
-      apt: name={{item}} state=installed
-      with_items:
-        - midori
+      apt:
+        state: present
+        name:
+          - epiphany-browser
 
     - name: Launcher Entry
       become_user: veins
@@ -479,56 +515,88 @@
         dest: /home/veins/.local/share/applications/sumo-launchd.desktop
         mode: 0755
 
-    - name: Launcher Entry
+    - name: Profile directory for online documentation
+      file:
+        path: /home/veins/.local/share/epiphany-veins-onlinedocs
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+
+    - name: Launcher file for online documentation
       become_user: veins
       copy:
         content: |
           [Desktop Entry]
           Type=Application
           Name=Veins documentation online
-          Exec=midori --app='http://veins.car2x.org/documentation/'
+          Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-onlinedocs' 'http://veins.car2x.org/documentation/'
           Icon=help-faq
           Categories=Science;
-          StartupWMClass=http___veins_car2x_org_documentation_
-        dest: /home/veins/.local/share/applications/veins-web.desktop
+          StartupWMClass=epiphany-veins-onlinedocs
+        dest: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
         mode: 0755
 
-    - name: Launcher Entry
+    - name: Launcher entry for online documentation
+      become_user: veins
+      file:
+        src: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
+        dest: /home/veins/.local/share/applications/epiphany-veins-onlinedocs.desktop
+        state: link
+
+    - name: Profile directory for offline documentation
+      file:
+        path: /home/veins/.local/share/epiphany-veins-offlinedocs
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+
+    - name: Launcher Entry for offline documentation
       become_user: veins
       copy:
         content: |
           [Desktop Entry]
           Type=Application
           Name=Veins source code documentation (offline)
-          Exec=midori --app='file:///home/veins/src/veins/doc/doxy/index.html'
+          Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-offlinedocs' 'file:///home/veins/src/veins/doc/doxy/index.html'
           Icon=help-contents
           Categories=Science;
-          StartupWMClass=file____home_veins_src_veins_doc_doxy_index_html
-        dest: /home/veins/.local/share/applications/veins-doxy.desktop
+          StartupWMClass=epiphany-veins-offlinedocs
+        dest: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
         mode: 0755
+
+    - name: Launcher entry for offline documentation
+      become_user: veins
+      file:
+        src: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
+        dest: /home/veins/.local/share/applications/epiphany-veins-offlinedocs.desktop
+        state: link
 
     - name: Favourites
       become_user: veins
       shell: |
         set -exu
-        xvfb-run dconf write "/org/gnome/shell/favorite-apps" "['omnetpp.desktop', 'sumo-launchd.desktop', 'veins-web.desktop', 'veins-doxy.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+        xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'sumo-launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
 
     - name: Background
       become_user: veins
       shell: |
         set -exu
-        xvfb-run dconf write "/org/gnome/desktop/background/picture-uri" "'file:///home/veins/Documents/veins-background.jpg'"
+        xvfb-run gsettings set org.gnome.desktop.background picture-uri 'file:///home/veins/Documents/veins-background.jpg'
 
     - name: Disable Screensaver
       become_user: veins
       shell: |
         set -exu
-        xvfb-run dconf write "/org/gnome/desktop/session/idle-delay" "uint32 0"
+        xvfb-run gsettings set org.gnome.desktop.session idle-delay 0
+        xvfb-run gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "nothing"
 
-    - name: Script for first login
+    - name: Script for graphical login
       become_user: veins
       copy:
         content: |
+          # Show help on first login
           if [ -f ".veins-first-login" ]; then
             echo "not the first login"
           else
@@ -538,16 +606,36 @@
         dest: /home/veins/.gnomerc
         mode: 0755
 
+    - name: Script for gnome login
+      become_user: veins
+      copy:
+        content: |
+          # Load common environment variables and shell config
+          . ~/.shrc
+        dest: /home/veins/.profile
+        mode: 0755
+
+    - name: Script for zsh login
+      become_user: veins
+      copy:
+        content: |
+          # Load common environment variables and shell config
+          . ~/.shrc
+        dest: /home/veins/.zprofile
+        mode: 0755
+
     - name: Script for installing virtualbox-guest-tools
       become_user: veins
       copy:
         content: |
           #!/bin/bash
           set -e
-          sudo sh -c "echo 'deb http://deb.debian.org/debian/ stretch-backports contrib' > /etc/apt/sources.list.d/debian-strech-backports-contrib.list"
+          sudo sh -c "echo 'deb http://httpredir.debian.org/debian buster non-free\ndeb http://security.debian.org/debian-security buster/updates non-free\ndeb http://httpredir.debian.org/debian buster-updates non-free' > /etc/apt/sources.list.d/debian-buster-nonfree.list"
           sudo apt update
-          sudo apt install virtualbox-guest-x11
-          sudo usermod -a -G vboxsf veins
+          sudo apt install virtualbox-guest-additions-iso
+          sudo mount /usr/share/virtualbox/VBoxGuestAdditions.iso /mnt
+          sudo /mnt/VBoxLinuxAdditions.run || echo "Installation aborted. This is not necessarily a problem, so continuing anyway."
+          sudo umount /mnt
           echo Please reboot machine to make sure changes are applied...
         dest: /home/veins/bin/virtualbox-guest-install.sh
         mode: 0755
@@ -556,7 +644,7 @@
       become_user: veins
       shell: |
         set -exu
-        source /home/veins/.profile
+        source /home/veins/.shrc
         xvfb-run /home/veins/src/omnetpp/ide/omnetpp --launcher.suppressErrors -data /home/veins/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -build all || echo "build all: exit code $? is suppressed"
       args:
         executable: /bin/bash
