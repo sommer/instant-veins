@@ -358,6 +358,56 @@
         creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/inet
 
 
+    #                  _    _                 _   _
+    #   ___ ___   ___ | | _(_) ___  ___ _   _| |_| |_ ___ _ __
+    #  / __/ _ \ / _ \| |/ / |/ _ \/ __| | | | __| __/ _ \ '__|
+    # | (_| (_) | (_) |   <| |  __/ (__| |_| | |_| ||  __/ |
+    #  \___\___/ \___/|_|\_\_|\___|\___|\__,_|\__|\__\___|_|
+    #
+    #
+    - name: Install packages
+      apt:
+        state: present
+        name:
+          - cookiecutter
+
+    - name: Create directories
+      file:
+        path: /home/veins/{{item}}
+        state: directory
+        owner: veins
+        group: veins
+        mode: 0755
+      with_items:
+        - .cookiecutters
+
+    - name: Clone project
+      become_user: veins
+      git:
+        repo: https://github.com/veins/cookiecutter-veins-project
+        dest: /home/veins/.cookiecutters/cookiecutter-veins-project
+        update: no
+
+    - name: Prepare branch
+      become_user: veins
+      shell: |
+        set -exu
+        git checkout -B cookiecutter-veins-project-1.0-work cookiecutter-veins-project-1.0
+      args:
+        executable: /bin/bash
+        chdir: /home/veins/.cookiecutters/cookiecutter-veins-project
+
+    - name: Script for running cookiecutter
+      become_user: veins
+      copy:
+        content: |
+          #!/bin/bash
+          set -e
+          cookiecutter cookiecutter-veins-project "$@"
+        dest: /home/veins/bin/cookiecutter-veins-project.sh
+        mode: 0755
+
+
     #            _
     # __   _____(_)_ __  ___
     # \ \ / / _ \ | '_ \/ __|
