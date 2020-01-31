@@ -1,0 +1,133 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+
+- name: Update apt
+  apt: update_cache=yes
+
+- name: Install base packages
+  apt:
+    state: present
+    name:
+      - vim-gtk3
+      - task-gnome-desktop
+      - zsh
+      - terminator
+      - git-core
+      - gitk
+      - git-gui
+      - tig
+      - clang
+      - ccache
+
+- name: Configure user
+  user:
+    name: veins
+    comment: "Veins (password is veins),,,"
+    shell: /bin/zsh
+    password: "$6$nkDuo0SdUXR8Im$4g8tXbIruu1YLimqImncK0pQ2EDzMuQjBwt8QRxS9L11NxvYCZarFdLvCwK28S.pF7aG2QpwUlG9J5i9GkYZB0"
+    groups: sudo,cdrom,floppy,dip,video,audio,plugdev,netdev,bluetooth
+    append: yes
+
+- name: Prepare for Virtualbox guest tools installation (packages)
+  apt:
+    state: present
+    name:
+      - linux-headers-amd64
+
+- name: Prepare for Virtualbox guest tools installation (group 1)
+  group:
+    state: present
+    name: vboxsf
+    system: yes
+
+- name: Prepare for Virtualbox guest tools installation (group 2)
+  user:
+    name: veins
+    groups: vboxsf
+    append: yes
+
+- name: Configure MOTD
+  copy:
+    content: |
+
+      Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+      permitted by applicable law.
+
+      Welcome to Instant Veins!
+    dest: /etc/motd
+
+- name: Make sure scripts can be executed from CDROM (VirtualBox guest additions need this)
+  replace:
+    dest: /etc/fstab
+    regexp: '(/media/cdrom0\s+udf,iso9660\s+)user,noauto(\s+)'
+    replace: '\1user,noauto,exec\2'
+
+- name: Disable (slow) DNS lookups for sshd
+  replace:
+    dest: /etc/ssh/sshd_config
+    regexp: '#(UseDNS no)'
+    replace: '\1'
+  notify:
+    - restart sshd
+
+- name: Install VMware guest tools
+  apt:
+    state: present
+    name:
+      - open-vm-tools-desktop
+
+- name: Create default directories for user
+  file:
+    path: /home/veins/{{item}}
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+  with_items:
+    - src
+    - bin
+    - Documents
+
+- name: Create .shrc
+  become_user: veins
+  lineinfile:
+    dest: /home/veins/.shrc
+    create: yes
+    line: '# Common environment variables and shell config'
+
+- name: Update .shrc to include bin/ in PATH
+  lineinfile:
+    dest: /home/veins/.shrc
+    line: 'PATH="$PATH:$HOME/bin"'
+
+- name: Update .shrc for ccache
+  lineinfile:
+    dest: /home/veins/.shrc
+    line: 'PATH="/usr/lib/ccache:$PATH"'
+
+- name: Disable Wayland for GDM3
+  replace:
+    path: /etc/gdm3/daemon.conf
+    regexp: '^#WaylandEnable=false$'
+    replace: 'WaylandEnable=false'
+

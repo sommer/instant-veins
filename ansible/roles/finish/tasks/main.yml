@@ -1,0 +1,203 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+
+- name: Create default directories for user
+  become_user: veins
+  file:
+    path: /home/veins/{{item}}
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+  with_items:
+    - .local/share/applications
+
+- name: Install base packages
+  apt:
+    state: present
+    name:
+      - epiphany-browser
+
+- name: Launcher Entry
+  become_user: veins
+  copy:
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=OMNeT++ IDE
+      Exec=omnetpp -data /home/veins/workspace.omnetpp -import /home/veins/src/veins/README.txt
+      Icon=/home/veins/src/omnetpp/ide/icon.xpm
+      Categories=Science;
+      StartupWMClass=OMNeT++ IDE
+    dest: /home/veins/.local/share/applications/omnetpp.desktop
+    mode: 0755
+
+- name: Launcher Entry
+  become_user: veins
+  copy:
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=sumo-launchd
+      Exec=xterm -class sumo-launchd -e /home/veins/src/veins/sumo-launchd.py -vv
+      Icon=network-transmit-receive-symbolic
+      Categories=Science;
+      StartupWMClass=sumo-launchd
+    dest: /home/veins/.local/share/applications/sumo-launchd.desktop
+    mode: 0755
+
+- name: Profile directory for online documentation
+  file:
+    path: /home/veins/.local/share/epiphany-veins-onlinedocs
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+
+- name: Launcher file for online documentation
+  become_user: veins
+  copy:
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Veins documentation online
+      Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-onlinedocs' 'http://veins.car2x.org/documentation/'
+      Icon=help-faq
+      Categories=Science;
+      StartupWMClass=epiphany-veins-onlinedocs
+    dest: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
+    mode: 0755
+
+- name: Launcher entry for online documentation
+  become_user: veins
+  file:
+    src: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
+    dest: /home/veins/.local/share/applications/epiphany-veins-onlinedocs.desktop
+    state: link
+
+- name: Profile directory for offline documentation
+  file:
+    path: /home/veins/.local/share/epiphany-veins-offlinedocs
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+
+- name: Launcher Entry for offline documentation
+  become_user: veins
+  copy:
+    content: |
+      [Desktop Entry]
+      Type=Application
+      Name=Veins source code documentation (offline)
+      Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-offlinedocs' 'file:///home/veins/src/veins/doc/doxy/index.html'
+      Icon=help-contents
+      Categories=Science;
+      StartupWMClass=epiphany-veins-offlinedocs
+    dest: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
+    mode: 0755
+
+- name: Launcher entry for offline documentation
+  become_user: veins
+  file:
+    src: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
+    dest: /home/veins/.local/share/applications/epiphany-veins-offlinedocs.desktop
+    state: link
+
+- name: Favourites
+  become_user: veins
+  shell: |
+    set -exu
+    xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'sumo-launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+
+- name: Background
+  become_user: veins
+  shell: |
+    set -exu
+    xvfb-run gsettings set org.gnome.desktop.background picture-uri 'file:///home/veins/Documents/veins-background.jpg'
+
+- name: Disable Screensaver
+  become_user: veins
+  shell: |
+    set -exu
+    xvfb-run gsettings set org.gnome.desktop.session idle-delay 0
+    xvfb-run gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-type "nothing"
+
+- name: Script for graphical login
+  become_user: veins
+  copy:
+    content: |
+      # Show help on first login
+      if [ -f ".veins-first-login" ]; then
+        echo "not the first login"
+      else
+        gnome-help &
+        touch .veins-first-login
+      fi
+    dest: /home/veins/.gnomerc
+    mode: 0755
+
+- name: Script for gnome login
+  become_user: veins
+  copy:
+    content: |
+      # Load common environment variables and shell config
+      . ~/.shrc
+    dest: /home/veins/.profile
+    mode: 0755
+
+- name: Script for zsh login
+  become_user: veins
+  copy:
+    content: |
+      # Load common environment variables and shell config
+      . ~/.shrc
+    dest: /home/veins/.zprofile
+    mode: 0755
+
+- name: Script for installing virtualbox-guest-tools
+  become_user: veins
+  copy:
+    content: |
+      #!/bin/bash
+      set -e
+      sudo sh -c "echo 'deb http://httpredir.debian.org/debian buster non-free\ndeb http://security.debian.org/debian-security buster/updates non-free\ndeb http://httpredir.debian.org/debian buster-updates non-free' > /etc/apt/sources.list.d/debian-buster-nonfree.list"
+      sudo apt update
+      sudo apt install virtualbox-guest-additions-iso
+      sudo mount /usr/share/virtualbox/VBoxGuestAdditions.iso /mnt
+      sudo /mnt/VBoxLinuxAdditions.run || echo "Installation aborted. This is not necessarily a problem, so continuing anyway."
+      sudo umount /mnt
+      echo Please reboot machine to make sure changes are applied...
+    dest: /home/veins/bin/virtualbox-guest-install.sh
+    mode: 0755
+
+- name: Build Workspace
+  become_user: veins
+  shell: |
+    set -exu
+    source /home/veins/.shrc
+    xvfb-run /home/veins/src/omnetpp/ide/omnetpp --launcher.suppressErrors -data /home/veins/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -build all || echo "build all: exit code $? is suppressed"
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src
+

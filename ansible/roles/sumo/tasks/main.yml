@@ -1,0 +1,84 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+
+- name: Install base packages
+  apt:
+    state: present
+    name:
+      - libxerces-c-dev
+      - libproj-dev
+      - libgdal-dev
+      - libfox-1.6-dev
+      - libopenscenegraph-3.4-dev
+      - libavformat-dev
+      - libavcodec-dev
+      - libswscale-dev
+      - python-dev
+      - cmake
+
+- name: Create default directories
+  become_user: veins
+  file:
+    path: /home/veins/{{item}}
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+  with_items:
+    - src
+
+- name: Unpack source
+  become_user: veins
+  shell: |
+    set -exu
+    tar -xvf sumo-src-1.4.0.tar.gz
+  args:
+    executable: /bin/sh
+    chdir: /home/veins/src
+    creates: /home/veins/src/sumo-1.4.0
+
+- name: Create symlink
+  become_user: veins
+  file:
+    src: /home/veins/src/sumo-1.4.0
+    dest: /home/veins/src/sumo
+    state: link
+
+- name: Add to path
+  become_user: veins
+  lineinfile:
+    dest: /home/veins/.shrc
+    line: 'PATH="$PATH:$HOME/src/sumo/bin"'
+
+- name: Build SUMO
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    cmake ..
+    make -j2
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/sumo/build
+    creates: /home/veins/src/sumo/bin/sumo
+

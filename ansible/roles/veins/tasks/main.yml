@@ -1,0 +1,120 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+
+- name: Install base packages
+  apt:
+    state: present
+    name:
+      - xterm
+      - clang-format
+      - uncrustify
+      - valgrind
+      - gdb
+      - lldb
+      - doxygen
+      - graphviz
+
+- name: Create default directories
+  become_user: veins
+  file:
+    path: /home/veins/{{item}}
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+  with_items:
+    - src
+
+- name: Clone git
+  become_user: veins
+  git:
+    repo: https://github.com/sommer/veins.git
+    dest: /home/veins/src/veins
+    update: no
+
+- name: Prepare branch
+  become_user: veins
+  shell: |
+    set -exu
+    git checkout -B veins-5.0-work veins-5.0
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins
+
+- name: Build Veins
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    ./configure
+    make -j2
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins
+    creates: /home/veins/src/veins/src/libveins.so
+
+- name: Build Veins Doxygen
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    make doxy
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins
+    creates: /home/veins/src/veins/doc/doxy/index.html
+
+- name: Build Veins_INET
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    ./configure
+    make -j2
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins/subprojects/veins_inet
+    creates: /home/veins/src/veins/subprojects/veins_inet/src/libveins_inet.so
+
+- name: Import Veins into Workspace
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins
+    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins
+
+- name: Import Veins_INET into Workspace
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/veins/subprojects/veins_inet
+    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet
+
