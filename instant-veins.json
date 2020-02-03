@@ -62,7 +62,7 @@
         "<enter>"
       ],
       "format": "ova",
-      "output_directory": "output",
+      "output_directory": "output/instant-veins-{{user `version`}}",
       "vm_name": "instant-veins-{{user `version`}}",
       "export_opts": [
         "--manifest",
