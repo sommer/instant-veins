@@ -81,16 +81,6 @@
     },
     {
       "type": "file",
-      "source": "files/.zshrc",
-      "destination": "/home/veins/.zshrc"
-    },
-    {
-      "type": "file",
-      "source": "files/veins-background.jpg",
-      "destination": "/home/veins/Documents/veins-background.jpg"
-    },
-    {
-      "type": "file",
       "source": "files/omnetpp-5.5.1-src-linux.tgz",
       "destination": "/home/veins/src/omnetpp-5.5.1-src-linux.tgz"
     },

@@ -130,6 +130,13 @@
     set -exu
     xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'sumo-launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
 
+- name: Copy background picture
+  become_user: veins
+  copy:
+    src: "veins-background.jpg"
+    dest: "/home/veins/Documents/veins-background.jpg"
+    mode: 0644
+
 - name: Background
   become_user: veins
   shell: |
@@ -164,6 +171,13 @@
       # Load common environment variables and shell config
       . ~/.shrc
     dest: /home/veins/.profile
+    mode: 0755
+
+- name: Copy zshrc
+  become_user: veins
+  copy:
+    src: ".zshrc"
+    dest: "/home/veins/.zshrc"
     mode: 0755
 
 - name: Script for zsh login
