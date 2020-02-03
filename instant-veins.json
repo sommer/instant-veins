@@ -80,16 +80,6 @@
       "script": "scripts/pre.sh"
     },
     {
-      "type": "file",
-      "source": "files/omnetpp-5.5.1-src-linux.tgz",
-      "destination": "/home/veins/src/omnetpp-5.5.1-src-linux.tgz"
-    },
-    {
-      "type": "file",
-      "source": "files/sumo-src-1.4.0.tar.gz",
-      "destination": "/home/veins/src/sumo-src-1.4.0.tar.gz"
-    },
-    {
       "type": "ansible-local",
       "playbook_file": "ansible/instant-veins.yml",
       "playbook_dir": "ansible"

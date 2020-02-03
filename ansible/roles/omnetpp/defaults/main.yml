@@ -1,0 +1,5 @@
+---
+omnetpp_tarball_url: https://github.com/omnetpp/omnetpp/releases/download/omnetpp-5.5.1/omnetpp-5.5.1-src-linux.tgz
+omnetpp_tarball_filename: omnetpp-5.5.1-src-linux.tgz
+omnetpp_tarball_sha1: 9a20bfcb8d367844e5e8d5c781127aa794292ffa
+omnetpp_dir: omnetpp-5.5.1

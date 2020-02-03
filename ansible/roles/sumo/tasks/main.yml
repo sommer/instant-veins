@@ -47,20 +47,26 @@
   with_items:
     - src
 
+- name: Download source
+  get_url:
+    url: "{{ sumo_tarball_url }}"
+    dest: "/home/veins/src/{{ sumo_tarball_filename }}"
+    checksum: "sha1:{{ sumo_tarball_sha1 }}"
+
 - name: Unpack source
   become_user: veins
   shell: |
     set -exu
-    tar -xvf sumo-src-1.4.0.tar.gz
+    tar -xvf "{{ sumo_tarball_filename }}"
   args:
     executable: /bin/sh
     chdir: /home/veins/src
-    creates: /home/veins/src/sumo-1.4.0
+    creates: "/home/veins/src/{{ sumo_dir }}"
 
 - name: Create symlink
   become_user: veins
   file:
-    src: /home/veins/src/sumo-1.4.0
+    src: "/home/veins/src/{{ sumo_dir }}"
     dest: /home/veins/src/sumo
     state: link
 
