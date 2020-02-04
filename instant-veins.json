@@ -22,7 +22,7 @@
   ],
 
   "variables": {
-    "version": "5.0-i2"
+    "version": "5.0-i2-simulte"
   },
 
   "builders": [

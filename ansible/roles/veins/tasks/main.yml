@@ -84,7 +84,7 @@
     chdir: /home/veins/src/veins
     creates: /home/veins/src/veins/doc/doxy/index.html
 
-- name: Build Veins_INET
+- name: Build Veins_INET3
   become_user: veins
   shell: |
     set -exu
@@ -93,8 +93,8 @@
     make -j2
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/veins/subprojects/veins_inet
-    creates: /home/veins/src/veins/subprojects/veins_inet/src/libveins_inet.so
+    chdir: /home/veins/src/veins/subprojects/veins_inet3
+    creates: /home/veins/src/veins/subprojects/veins_inet3/src/libveins_inet.so
 
 - name: Import Veins into Workspace
   become_user: veins
@@ -107,7 +107,7 @@
     chdir: /home/veins/src/veins
     creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins
 
-- name: Import Veins_INET into Workspace
+- name: Import Veins_INET3 into Workspace
   become_user: veins
   shell: |
     set -exu
@@ -115,6 +115,6 @@
     xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/veins/subprojects/veins_inet
-    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet
+    chdir: /home/veins/src/veins/subprojects/veins_inet3
+    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet3
 

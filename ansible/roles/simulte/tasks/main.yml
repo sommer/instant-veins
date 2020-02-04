@@ -35,54 +35,44 @@
 - name: Clone git
   become_user: veins
   git:
-    repo: https://github.com/inet-framework/inet
-    dest: /home/veins/src/inet
+    repo: https://github.com/inet-framework/simulte.git
+    dest: /home/veins/src/simulte
     update: no
 
 - name: Prepare branch
   become_user: veins
   shell: |
     set -exu
-    git checkout -B v3.6.5-work v3.6.5
-    git submodule init
-    git submodule update
+    git checkout -B veins-integration-work fa99469964a577bc113bb692300096c8b9e32774
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/inet
+    chdir: /home/veins/src/simulte
 
-- name: Disable INETs use of pre-compiled headers
-  become_user: veins
-  lineinfile:
-    dest: /home/veins/.shrc
-    line: 'export USE_PRECOMPILED_HEADER=no'
-
-- name: Build INET in release mode
+- name: Enable project features
   become_user: veins
   shell: |
     set -exu
     source ~/.shrc
     opp_featuretool reset
-    make src/inet/features.h
-    make makefiles
-    make -j2 MODE=release
+    opp_featuretool enable SimuLTE_Cars
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/inet
-    creates: /home/veins/src/inet/src/libINET.so
+    chdir: /home/veins/src/simulte
 
-- name: Build INET in debug mode
+- name: Install base packages
+  apt: name={{item}} state=installed
+  with_items:
+    - xmlstarlet
+
+- name: Update project references
   become_user: veins
   shell: |
     set -exu
-    source ~/.shrc
-    opp_featuretool reset
-    make src/inet/features.h
-    make makefiles
-    make -j2 MODE=debug
+    xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="veins_inet3"]' .project
+    xmlstarlet ed --pf --inplace --subnode /projectDescription/projects --type elem -n project -v veins_inet3 .project
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/inet
-    creates: /home/veins/src/inet/src/libINET_dbg.so
+    chdir: /home/veins/src/simulte
 
 - name: Import into Workspace
   become_user: veins
@@ -92,6 +82,6 @@
     xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
   args:
     executable: /bin/bash
-    chdir: /home/veins/src/inet
-    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/inet
+    chdir: /home/veins/src/simulte
+    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/simulte
 
