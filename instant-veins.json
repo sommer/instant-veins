@@ -47,7 +47,11 @@
       "ssh_wait_timeout": "10000s",
       "vboxmanage": [
         [ "modifyvm", "{{.Name}}", "--memory", "4096" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "2" ]
+        [ "modifyvm", "{{.Name}}", "--cpus", "2" ],
+        [ "modifyvm", "{{.Name}}", "--vram", "128" ]
+      ],
+      "vboxmanage_post": [
+        [ "storageattach", "{{.Name}}", "--storagectl", "IDE Controller", "--port", "0", "--device", "1", "--type", "dvddrive", "--medium", "emptydrive" ]
       ],
       "boot_command": [
         "<esc><wait>",
