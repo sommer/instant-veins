@@ -56,7 +56,7 @@
   become_user: veins
   shell: |
     set -exu
-    git checkout -B veins-5.0-work veins-5.0
+    git checkout -B veins-{{ veins_version }}-work {{ veins_version }}
   args:
     executable: /bin/bash
     chdir: /home/veins/src/veins
@@ -117,4 +117,10 @@
     executable: /bin/bash
     chdir: /home/veins/src/veins/subprojects/veins_inet
     creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/veins_inet
+
+- name: Add setenv script
+  become_user: veins
+  lineinfile:
+    dest: /home/veins/.shrc
+    line: 'cd "$HOME/src/veins" && . ./setenv > /dev/null; cd - > /dev/null'
 

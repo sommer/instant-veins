@@ -58,12 +58,12 @@
     content: |
       [Desktop Entry]
       Type=Application
-      Name=sumo-launchd
-      Exec=xterm -class sumo-launchd -e /home/veins/src/veins/sumo-launchd.py -vv
+      Name=veins_launchd
+      Exec=xterm -class veins_launchd -e /home/veins/src/veins/bin/veins_launchd -vv
       Icon=network-transmit-receive-symbolic
       Categories=Science;
-      StartupWMClass=sumo-launchd
-    dest: /home/veins/.local/share/applications/sumo-launchd.desktop
+      StartupWMClass=veins_launchd
+    dest: /home/veins/.local/share/applications/veins_launchd.desktop
     mode: 0755
 
 - name: Profile directory for online documentation
@@ -128,7 +128,7 @@
   become_user: veins
   shell: |
     set -exu
-    xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'sumo-launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+    xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'veins_launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
 
 - name: Copy background picture
   become_user: veins

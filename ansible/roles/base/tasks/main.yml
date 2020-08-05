@@ -131,3 +131,13 @@
     regexp: '^#WaylandEnable=false$'
     replace: 'WaylandEnable=false'
 
+- name: Convenience script for running ansible playbook locally
+  become_user: veins
+  copy:
+    content: |
+      #!/bin/bash
+      set -e
+      ansible-playbook --connection=local --inventory 127.0.0.1, "$@"
+    dest: /home/veins/bin/ansible-playbook-local.sh
+    mode: 0755
+

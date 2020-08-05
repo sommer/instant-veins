@@ -57,7 +57,7 @@
   become_user: veins
   shell: |
     set -exu
-    tar -xvf "{{ sumo_tarball_filename }}"
+    tar -xvf "{{ sumo_tarball_filename }}" --one-top-level="{{ sumo_dir }}" --strip-components 1
   args:
     executable: /bin/sh
     chdir: /home/veins/src

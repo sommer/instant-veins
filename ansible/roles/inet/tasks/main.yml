@@ -43,7 +43,7 @@
   become_user: veins
   shell: |
     set -exu
-    git checkout -B v4.1.1-work v4.1.1
+    git checkout -B v{{ inet_version }}-work v{{ inet_version }}
     git submodule init
     git submodule update
   args:

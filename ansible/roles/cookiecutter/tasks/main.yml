@@ -48,7 +48,7 @@
   become_user: veins
   shell: |
     set -exu
-    git checkout -B cookiecutter-veins-project-1.0-work cookiecutter-veins-project-1.0
+    git checkout -B cookiecutter-veins-project-{{ cookiecutter_veins_project_version }}-work cookiecutter-veins-project-{{ cookiecutter_veins_project_version }}
   args:
     executable: /bin/bash
     chdir: /home/veins/.cookiecutters/cookiecutter-veins-project
