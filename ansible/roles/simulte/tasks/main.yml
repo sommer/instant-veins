@@ -43,7 +43,7 @@
   become_user: veins
   shell: |
     set -exu
-    git checkout -B veins-integration-work fa99469964a577bc113bb692300096c8b9e32774
+    git checkout -B simulte-v{{ simulte_version }}-work v{{ simulte_version }}
   args:
     executable: /bin/bash
     chdir: /home/veins/src/simulte
