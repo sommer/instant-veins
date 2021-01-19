@@ -33,6 +33,7 @@
       - lldb
       - doxygen
       - graphviz
+      - nemiver
 
 - name: Create default directories
   become_user: veins
