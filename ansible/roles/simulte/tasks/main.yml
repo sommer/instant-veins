@@ -1,0 +1,87 @@
+---
+#
+# Ansible Playbook for building Instant Veins
+# Copyright (C) 2018 Christoph Sommer <sommer@ccs-labs.org>
+#
+# Documentation for this template is at http://veins.car2x.org/
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+
+
+- name: Create default directories
+  become_user: veins
+  file:
+    path: /home/veins/{{item}}
+    state: directory
+    owner: veins
+    group: veins
+    mode: 0755
+  with_items:
+    - src
+
+- name: Clone git
+  become_user: veins
+  git:
+    repo: https://github.com/inet-framework/simulte.git
+    dest: /home/veins/src/simulte
+    update: no
+
+- name: Prepare branch
+  become_user: veins
+  shell: |
+    set -exu
+    git checkout -B simulte-v{{ simulte_version }}-work v{{ simulte_version }}
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/simulte
+
+- name: Enable project features
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    opp_featuretool reset
+    opp_featuretool enable SimuLTE_Cars
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/simulte
+
+- name: Install base packages
+  apt: name={{item}} state=installed
+  with_items:
+    - xmlstarlet
+
+- name: Update project references
+  become_user: veins
+  shell: |
+    set -exu
+    xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="veins_inet"]' .project
+    xmlstarlet ed --pf --inplace --subnode /projectDescription/projects --type elem -n project -v veins_inet .project
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/simulte
+
+- name: Import into Workspace
+  become_user: veins
+  shell: |
+    set -exu
+    source ~/.shrc
+    xvfb-run ~/src/omnetpp/ide/omnetpp -data ~/workspace.omnetpp -nosplash -application org.eclipse.cdt.managedbuilder.core.headlessbuild -import .
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/simulte
+    creates: /home/veins/workspace.omnetpp/.metadata/.plugins/org.eclipse.core.resources/.projects/simulte
+
