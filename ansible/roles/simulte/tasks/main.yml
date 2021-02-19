@@ -39,11 +39,27 @@
     dest: /home/veins/src/simulte
     update: no
 
+- name: Create symlink
+  become_user: veins
+  file:
+    src: "/home/veins/src/inet"
+    dest: /home/veins/src/inet4
+    state: link
+
 - name: Prepare branch
   become_user: veins
   shell: |
     set -exu
     git checkout -B simulte-v{{ simulte_version }}-work v{{ simulte_version }}
+  args:
+    executable: /bin/bash
+    chdir: /home/veins/src/simulte
+
+- name: Ensure patch for v1.2.0 is included
+  become_user: veins
+  shell: |
+    set -exu
+    git cherry-pick 23c0936e31
   args:
     executable: /bin/bash
     chdir: /home/veins/src/simulte
@@ -68,8 +84,11 @@
   become_user: veins
   shell: |
     set -exu
+    xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="inet4"]' .project
     xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="veins_inet"]' .project
+    xmlstarlet ed --pf --inplace --delete '/projectDescription/projects/project[text()="inet"]' .project
     xmlstarlet ed --pf --inplace --subnode /projectDescription/projects --type elem -n project -v veins_inet .project
+    xmlstarlet ed --pf --inplace --subnode /projectDescription/projects --type elem -n project -v inet .project
   args:
     executable: /bin/bash
     chdir: /home/veins/src/simulte
