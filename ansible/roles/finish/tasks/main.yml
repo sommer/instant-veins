@@ -88,6 +88,13 @@
     dest: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
     mode: 0755
 
+- name: App file for online documentation
+  become_user: veins
+  copy:
+    content: ""
+    dest: /home/veins/.local/share/epiphany-veins-onlinedocs/.app
+    mode: 0755
+
 - name: Launcher entry for online documentation
   become_user: veins
   file:
@@ -103,7 +110,7 @@
     group: veins
     mode: 0755
 
-- name: Launcher Entry for offline documentation
+- name: Launcher file for offline documentation
   become_user: veins
   copy:
     content: |
@@ -115,6 +122,13 @@
       Categories=Science;
       StartupWMClass=epiphany-veins-offlinedocs
     dest: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
+    mode: 0755
+
+- name: App file for offline documentation
+  become_user: veins
+  copy:
+    content: ""
+    dest: /home/veins/.local/share/epiphany-veins-offlinedocs/.app
     mode: 0755
 
 - name: Launcher entry for offline documentation
