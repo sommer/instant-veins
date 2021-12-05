@@ -1,5 +1,5 @@
 ---
-sumo_tarball_url: https://github.com/eclipse/sumo/archive/v1_8_0.tar.gz
-sumo_tarball_filename: sumo-src-1.8.0.tar.gz
-sumo_tarball_sha1: 2ea32a720e6e2e76a73d5cc8bf19784e5ca7c854
-sumo_dir: sumo-1.8.0
+sumo_tarball_url: https://github.com/eclipse/sumo/archive/v1_11_0.tar.gz
+sumo_tarball_filename: sumo-src-1.11.0.tar.gz
+sumo_tarball_sha1: 2dbdc23c9942c770bd9363ca5f1861c4b46afa63
+sumo_dir: sumo-1.11.0
