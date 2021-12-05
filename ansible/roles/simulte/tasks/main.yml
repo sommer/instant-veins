@@ -76,9 +76,10 @@
     chdir: /home/veins/src/simulte
 
 - name: Install base packages
-  apt: name={{item}} state=installed
-  with_items:
-    - xmlstarlet
+  apt:
+    state: present
+    name:
+      - xmlstarlet
 
 - name: Update project references
   become_user: veins

@@ -29,7 +29,7 @@
       - libproj-dev
       - libgdal-dev
       - libfox-1.6-dev
-      - libopenscenegraph-3.4-dev
+      - libopenscenegraph-dev
       - libavformat-dev
       - libavcodec-dev
       - libswscale-dev

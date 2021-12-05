@@ -29,15 +29,20 @@
       - flex
       - tcl-dev
       - tk-dev
-      - openjdk-11-jre
-      - qt5-default
-      - libopenscenegraph-3.4-dev
-      - libosgearth-dev
-      - openscenegraph-plugin-osgearth
+      - openjdk-17-jre
+      - qtbase5-dev
+      - libopenscenegraph-dev
       - xvfb
       - libwebkit2gtk-4.0-dev
       - doxygen
       - graphviz
+      - python3-numpy
+      - python3-pandas
+      - python3-matplotlib
+
+- name: Install base python packages
+  pip:
+    name: posix-ipc==1.0.5
 
 - name: Create default directories
   become_user: veins
@@ -82,8 +87,10 @@
 - name: Build OMNeT++
   become_user: veins
   shell: |
+    source setenv
     set -exu
     source ~/.shrc
+    perl -p -i -e 's/WITH_OSGEARTH=yes/WITH_OSGEARTH=no/' configure.user
     xvfb-run ./configure
     make -j2
   args:

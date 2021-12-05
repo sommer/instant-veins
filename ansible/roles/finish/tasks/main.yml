@@ -68,7 +68,7 @@
 
 - name: Profile directory for online documentation
   file:
-    path: /home/veins/.local/share/epiphany-veins-onlinedocs
+    path: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-onlinedocs
     state: directory
     owner: veins
     group: veins
@@ -81,30 +81,30 @@
       [Desktop Entry]
       Type=Application
       Name=Veins documentation online
-      Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-onlinedocs' 'http://veins.car2x.org/documentation/'
+      Exec=epiphany --application-mode --profile='/home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-onlinedocs' 'http://veins.car2x.org/documentation/'
       Icon=help-faq
       Categories=Science;
-      StartupWMClass=epiphany-veins-onlinedocs
-    dest: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
+      StartupWMClass=org.gnome.Epiphany.WebApp-veins-onlinedocs
+    dest: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-onlinedocs/org.gnome.Epiphany.WebApp-veins-onlinedocs.desktop
     mode: 0755
 
 - name: App file for online documentation
   become_user: veins
   copy:
     content: ""
-    dest: /home/veins/.local/share/epiphany-veins-onlinedocs/.app
+    dest: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-onlinedocs/.app
     mode: 0755
 
 - name: Launcher entry for online documentation
   become_user: veins
   file:
-    src: /home/veins/.local/share/epiphany-veins-onlinedocs/epiphany-veins-onlinedocs.desktop
-    dest: /home/veins/.local/share/applications/epiphany-veins-onlinedocs.desktop
+    src: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-onlinedocs/org.gnome.Epiphany.WebApp-veins-onlinedocs.desktop
+    dest: /home/veins/.local/share/applications/org.gnome.Epiphany.WebApp-veins-onlinedocs.desktop
     state: link
 
 - name: Profile directory for offline documentation
   file:
-    path: /home/veins/.local/share/epiphany-veins-offlinedocs
+    path: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-offlinedocs
     state: directory
     owner: veins
     group: veins
@@ -117,32 +117,32 @@
       [Desktop Entry]
       Type=Application
       Name=Veins source code documentation (offline)
-      Exec=epiphany --application-mode --profile='/home/veins/.local/share/epiphany-veins-offlinedocs' 'file:///home/veins/src/veins/doc/doxy/index.html'
+      Exec=epiphany --application-mode --profile='/home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-offlinedocs' 'file:///home/veins/src/veins/doc/doxy/index.html'
       Icon=help-contents
       Categories=Science;
-      StartupWMClass=epiphany-veins-offlinedocs
-    dest: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
+      StartupWMClass=org.gnome.Epiphany.WebApp-veins-offlinedocs
+    dest: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-offlinedocs/org.gnome.Epiphany.WebApp-veins-offlinedocs.desktop
     mode: 0755
 
 - name: App file for offline documentation
   become_user: veins
   copy:
     content: ""
-    dest: /home/veins/.local/share/epiphany-veins-offlinedocs/.app
+    dest: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-offlinedocs/.app
     mode: 0755
 
 - name: Launcher entry for offline documentation
   become_user: veins
   file:
-    src: /home/veins/.local/share/epiphany-veins-offlinedocs/epiphany-veins-offlinedocs.desktop
-    dest: /home/veins/.local/share/applications/epiphany-veins-offlinedocs.desktop
+    src: /home/veins/.local/share/org.gnome.Epiphany.WebApp-veins-offlinedocs/org.gnome.Epiphany.WebApp-veins-offlinedocs.desktop
+    dest: /home/veins/.local/share/applications/org.gnome.Epiphany.WebApp-veins-offlinedocs.desktop
     state: link
 
 - name: Favourites
   become_user: veins
   shell: |
     set -exu
-    xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'veins_launchd.desktop', 'epiphany-veins-onlinedocs.desktop', 'epiphany-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
+    xvfb-run gsettings set org.gnome.shell favorite-apps "['omnetpp.desktop', 'veins_launchd.desktop', 'org.gnome.Epiphany.WebApp-veins-onlinedocs.desktop', 'org.gnome.Epiphany.WebApp-veins-offlinedocs.desktop', 'firefox-esr.desktop', 'org.gnome.Nautilus.desktop', 'terminator.desktop']"
 
 - name: Copy background picture
   become_user: veins
@@ -209,7 +209,7 @@
     content: |
       #!/bin/bash
       set -e
-      sudo sh -c "echo 'deb http://httpredir.debian.org/debian buster non-free\ndeb http://security.debian.org/debian-security buster/updates non-free\ndeb http://httpredir.debian.org/debian buster-updates non-free' > /etc/apt/sources.list.d/debian-buster-nonfree.list"
+      sudo sh -c "echo 'deb http://deb.debian.org/debian/ bullseye main non-free\ndeb http://security.debian.org/ bullseye-security main non-free\ndeb http://deb.debian.org/debian/ bullseye-updates main non-free\n' > /etc/apt/sources.list.d/debian-bullseye-nonfree.list"
       sudo apt update
       sudo apt install virtualbox-guest-additions-iso
       sudo mount /usr/share/virtualbox/VBoxGuestAdditions.iso /mnt
